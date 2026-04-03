@@ -1,4 +1,6 @@
-const BUILD_VERSION = '2026-04-03-c';
+const BUILD_VERSION = '2026-04-03-e';
+
+const APP_BASE_PATH = getAppBasePath();
 
 const gallery = document.getElementById('gallery');
 const template = document.getElementById('card-template');
@@ -283,9 +285,31 @@ function openRecipeDetail(recipe) {
 }
 
 async function loadRecipesFromRepo() {
-  const index = await fetch('./recipes/index.json').then((response) => response.json());
-  const items = await Promise.all(index.map((path) => fetch(path).then((response) => response.text())));
+  const indexUrl = resolveRepoUrl('recipes/index.json');
+  const index = await fetch(indexUrl).then((response) => response.json());
+
+  const items = await Promise.all(
+    index.map((path) => fetch(resolveRepoUrl(path)).then((response) => response.text()))
+  );
+
   return items.map((text, idx) => parseRecipeMarkdown(text, idx));
+}
+
+function resolveRepoUrl(path) {
+  const cleaned = path.replace(/^\.\//, '').replace(/^\//, '');
+  return `${window.location.origin}${APP_BASE_PATH}${cleaned}`;
+}
+
+function getAppBasePath() {
+  const pathname = window.location.pathname;
+  if (pathname.endsWith('/')) return pathname;
+
+  const lastPart = pathname.split('/').pop() || '';
+  if (lastPart.includes('.')) {
+    return pathname.slice(0, pathname.lastIndexOf('/') + 1);
+  }
+
+  return `${pathname}/`;
 }
 
 function parseRecipeMarkdown(markdown, index) {

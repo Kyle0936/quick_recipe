@@ -76,7 +76,12 @@ Then open: `http://localhost:8000`
 Yes, this can happen if conflicts were resolved by keeping older `index.html` references or older asset files.
 
 Checklist:
-1. Confirm `index.html` contains the latest query-string versions for CSS/JS (for example `?v=20260403b`).
+1. Confirm `index.html` contains the latest query-string versions for CSS/JS (for example `?v=20260403e`).
 2. Confirm `app.js` shows the latest `BUILD_VERSION` in the page footer.
 3. Hard refresh (`Ctrl+Shift+R` / `Cmd+Shift+R`).
 4. In GitHub Pages settings, verify branch/folder still points to your intended source.
+
+
+## GitHub Pages 404 fix for `recipes/*.md`
+
+If you see 404 for markdown recipe files on GitHub Pages, keep a `.nojekyll` file in repo root so Pages serves markdown files as static assets.
