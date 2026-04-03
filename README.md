@@ -9,6 +9,8 @@ This makes the recipe collection publicly visible and collaboratively editable t
 - Recipe format based on Markdown + frontmatter (`title`, `calories`, `tags`, `images`).
 - Horizontal sliding gallery with search + tag filter + calorie cap filter.
 - "🎲 I'm Feeling Hungry" button to jump to a random recipe from current filtered results.
+- Language switcher (English / 中文) and light/dark mode toggle.
+- Adaptive image rendering (no hard-cropping in modal/gallery previews).
 - Modal-based upload/recipe editor for creating new recipe Markdown + multiple image references.
 
 ## Recipe file format
