@@ -1,4 +1,4 @@
-const BUILD_VERSION = '2026-04-03-b';
+const BUILD_VERSION = '2026-04-03-c';
 
 const gallery = document.getElementById('gallery');
 const template = document.getElementById('card-template');
@@ -29,8 +29,11 @@ const closePackageButton = document.getElementById('close-package');
 const packageForm = document.getElementById('recipe-package-form');
 const markdownDownload = document.getElementById('download-markdown');
 const packagePreview = document.getElementById('package-preview');
-const previewImages = document.getElementById('m-preview-images');
-const modalImagesInput = document.getElementById('m-images');
+const ingredientsEditor = document.getElementById('m-ingredients-editor');
+const instructionsEditor = document.getElementById('m-instructions-editor');
+const attachmentPreview = document.getElementById('attachment-preview');
+
+const attachments = [];
 
 let recipes = [];
 let filteredRecipes = [];
@@ -80,15 +83,8 @@ openModalButton.addEventListener('click', () => recipeModal.showModal());
 closeModalButton.addEventListener('click', () => recipeModal.close());
 closePackageButton.addEventListener('click', () => packageModal.close());
 
-modalImagesInput.addEventListener('change', () => {
-  previewImages.innerHTML = '';
-  [...modalImagesInput.files].forEach((file) => {
-    const image = document.createElement('img');
-    image.src = URL.createObjectURL(file);
-    image.alt = file.name;
-    previewImages.append(image);
-  });
-});
+ingredientsEditor.addEventListener('paste', (event) => handleEditorPaste(event, 'ingredients'));
+instructionsEditor.addEventListener('paste', (event) => handleEditorPaste(event, 'instructions'));
 
 packageForm.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -97,13 +93,22 @@ packageForm.addEventListener('submit', (event) => {
   const slug = slugify(title);
   const calories = Number(getValue('m-calories'));
   const tags = parseTags(getValue('m-tags'));
-  const ingredients = linesFromTextarea(getValue('m-ingredients'));
-  const instructions = linesFromTextarea(getValue('m-instructions'));
-  const imagePaths = [...modalImagesInput.files].map((file) => `recipes/images/${slug}/${file.name}`);
 
-  const markdown = buildMarkdown({ title, calories, tags, ingredients, instructions, imagePaths });
+  const ingredientLines = extractTextLinesFromEditor(ingredientsEditor);
+  const instructionLines = extractTextLinesFromEditor(instructionsEditor);
+
+  const attachmentPaths = attachments.map((item, idx) => `recipes/images/${slug}/${idx + 1}-${item.fileName}`);
+
+  const markdown = buildMarkdown({
+    title,
+    calories,
+    tags,
+    ingredients: ingredientLines,
+    instructions: instructionLines,
+    imagePaths: attachmentPaths,
+  });
+
   const blob = new Blob([markdown], { type: 'text/markdown' });
-
   markdownDownload.href = URL.createObjectURL(blob);
   markdownDownload.download = `${slug}.md`;
   markdownDownload.textContent = `Download ${slug}.md`;
@@ -112,6 +117,57 @@ packageForm.addEventListener('submit', (event) => {
   recipeModal.close();
   packageModal.showModal();
 });
+
+function handleEditorPaste(event, section) {
+  const items = [...(event.clipboardData?.items || [])];
+  const imageItems = items.filter((item) => item.type.startsWith('image/'));
+  if (!imageItems.length) return;
+
+  event.preventDefault();
+
+  imageItems.forEach((item) => {
+    const file = item.getAsFile();
+    if (!file) return;
+
+    const fileName = file.name || `${section}-${Date.now()}.png`;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      attachments.push({ dataUrl, fileName, section });
+      injectInlineImage(event.target, dataUrl, fileName);
+      renderAttachmentPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function injectInlineImage(editor, src, name) {
+  const image = document.createElement('img');
+  image.src = src;
+  image.alt = name;
+  image.className = 'inline-image';
+
+  const lineBreak = document.createElement('div');
+  lineBreak.append(image);
+  editor.append(lineBreak);
+}
+
+function renderAttachmentPreview() {
+  attachmentPreview.innerHTML = '';
+  attachments.forEach((file, idx) => {
+    const tag = document.createElement('div');
+    tag.className = 'attachment-chip';
+    tag.innerHTML = `<img src="${file.dataUrl}" alt="${file.fileName}" /><span>${idx + 1}. ${file.fileName}</span><small>${file.section}</small>`;
+    attachmentPreview.append(tag);
+  });
+}
+
+function extractTextLinesFromEditor(editor) {
+  return editor.innerText
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
 
 function renderTagChips(recipeList) {
   const tagCounts = new Map();
@@ -156,7 +212,6 @@ function applyFilters() {
   });
 
   filteredRecipes = sortRecipes(filteredRecipes, sortSelect.value);
-
   renderGallery(filteredRecipes);
   resultCount.textContent = `${filteredRecipes.length} result${filteredRecipes.length === 1 ? '' : 's'}`;
 }
@@ -183,20 +238,21 @@ function renderGallery(list) {
 
     const cover = node.querySelector('.cover');
     const thumbs = node.querySelector('.thumbs');
-    const imageUrls = recipe.images.length ? recipe.images : [placeholder(recipe.title)];
+    const title = recipe.title || 'Untitled recipe';
+    const imageUrls = recipe.images.length ? recipe.images : [placeholder(title)];
 
     cover.src = imageUrls[0];
-    cover.alt = recipe.title;
+    cover.alt = title;
 
     imageUrls.slice(1, 5).forEach((src) => {
       const thumb = document.createElement('img');
       thumb.src = src;
-      thumb.alt = recipe.title;
+      thumb.alt = title;
       thumbs.append(thumb);
     });
 
-    node.querySelector('.title').textContent = recipe.title;
-    node.querySelector('.meta').textContent = `Calories: ${recipe.calories}`;
+    node.querySelector('.title').textContent = title;
+    node.querySelector('.meta').textContent = `Calories: ${Number.isFinite(recipe.calories) ? recipe.calories : 0}`;
     node.querySelector('.tags').textContent = `Tags: ${recipe.tags.join(', ') || 'none'}`;
 
     node.addEventListener('click', () => openRecipeDetail(recipe));
@@ -209,13 +265,13 @@ function renderGallery(list) {
 }
 
 function openRecipeDetail(recipe) {
-  detailTitle.textContent = recipe.title;
+  detailTitle.textContent = recipe.title || 'Untitled recipe';
   detailMeta.textContent = `Calories: ${recipe.calories} • Tags: ${recipe.tags.join(', ')}`;
   detailIngredients.textContent = recipe.ingredients;
   detailInstructions.textContent = recipe.instructions;
 
   detailImages.innerHTML = '';
-  const imageUrls = recipe.images.length ? recipe.images : [placeholder(recipe.title)];
+  const imageUrls = recipe.images.length ? recipe.images : [placeholder(recipe.title || 'recipe')];
   imageUrls.forEach((src) => {
     const image = document.createElement('img');
     image.src = src;
@@ -227,13 +283,16 @@ function openRecipeDetail(recipe) {
 }
 
 async function loadRecipesFromRepo() {
-  const index = await fetch('recipes/index.json').then((response) => response.json());
+  const index = await fetch('./recipes/index.json').then((response) => response.json());
   const items = await Promise.all(index.map((path) => fetch(path).then((response) => response.text())));
   return items.map((text, idx) => parseRecipeMarkdown(text, idx));
 }
 
 function parseRecipeMarkdown(markdown, index) {
-  const [, rawFrontmatter = '', body = ''] = markdown.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+  const normalized = markdown.replace(/\r\n/g, '\n');
+  const match = normalized.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  const rawFrontmatter = match ? match[1] : '';
+  const body = match ? match[2] : normalized;
 
   const title = getFrontmatterValue(rawFrontmatter, 'title') || `Recipe ${index + 1}`;
   const calories = Number(getFrontmatterValue(rawFrontmatter, 'calories') || 0);
@@ -265,7 +324,7 @@ function parseFrontmatterArray(frontmatter, key) {
   for (let i = start + 1; i < lines.length; i += 1) {
     const line = lines[i].trim();
     if (!line.startsWith('- ')) break;
-    values.push(line.replace('- ', '').trim());
+    values.push(line.slice(2).trim());
   }
   return values;
 }
@@ -282,7 +341,7 @@ title: ${title}
 calories: ${calories}
 tags: ${tags.join(', ')}
 images:
-${imagePaths.map((path) => `  - ${path}`).join('\n') || '  - https://placehold.co/1200x800?text=Add+an+image'}
+${imagePaths.map((path) => `  - ${path}`).join('\n') || '  - https://placehold.co/1200x800?text=Paste+Images+Here'}
 ---
 
 ## Ingredients
@@ -297,13 +356,6 @@ function parseTags(raw) {
   return raw
     .split(',')
     .map((tag) => tag.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function linesFromTextarea(raw) {
-  return raw
-    .split('\n')
-    .map((line) => line.replace(/^[-\d.\s]+/, '').trim())
     .filter(Boolean);
 }
 

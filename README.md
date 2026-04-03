@@ -9,7 +9,7 @@ This makes the recipe collection publicly visible and collaboratively editable t
 - Recipe format based on Markdown + frontmatter (`title`, `calories`, `tags`, `images`).
 - Horizontal sliding gallery with search + tag filter + calorie cap filter.
 - "🎲 I'm Feeling Hungry" button to jump to a random recipe from current filtered results.
-- Modal-based upload/package generator for creating new recipe Markdown + multiple image references.
+- Modal-based upload/recipe editor for creating new recipe Markdown + multiple image references.
 
 ## Recipe file format
 
@@ -36,8 +36,8 @@ images:
 
 ## Add a new recipe publicly
 
-1. Open the website and click **Add Recipe Package**.
-2. Fill the form and upload one or more images.
+1. Open the website and click **Create Recipe**.
+2. Fill the form and paste one or more images directly into the Ingredients/Instructions editors (or type text only).
 3. Download the generated markdown file.
 4. In this GitHub repo:
    - add the markdown file to `/recipes`
