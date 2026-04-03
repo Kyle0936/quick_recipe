@@ -1,0 +1,171 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #223;
+}
+
+.hero {
+  background: linear-gradient(135deg, #4c6fff, #6a3df0);
+  color: #fff;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.layout {
+  max-width: 1100px;
+  margin: 1rem auto 2rem;
+  padding: 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+textarea {
+  border: 1px solid #ccd3e0;
+  border-radius: 8px;
+  padding: 0.6rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: #4c6fff;
+  color: #fff;
+  padding: 0.65rem 0.95rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #3f5de0;
+}
+
+.picker-controls {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.result {
+  margin-top: 0.8rem;
+  border: 1px dashed #a7b3cd;
+  border-radius: 10px;
+  padding: 0.8rem;
+  white-space: pre-wrap;
+}
+
+.result.empty {
+  color: #60708e;
+}
+
+.paste-area {
+  border: 1px dashed #8ea0c5;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #4f5f7a;
+  background: #f7f9ff;
+  cursor: text;
+  margin-bottom: 0.6rem;
+}
+
+.paste-area:focus {
+  outline: 2px solid #4c6fff;
+  outline-offset: 2px;
+}
+
+.pasted-preview {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border: 1px solid #dde4f1;
+  border-radius: 8px;
+  background: #eef2fa;
+}
+
+.hidden {
+  display: none;
+}
+
+strong,
+.hint.strong {
+  font-weight: 700;
+}
+
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.8rem;
+}
+
+.recipe-card {
+  border: 1px solid #dde4f1;
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #eef2fa;
+}
+
+.recipe-meta,
+.recipe-tags,
+.hint {
+  margin: 0;
+  color: #4f5f7a;
+}
+
+pre {
+  margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
