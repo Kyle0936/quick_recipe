@@ -1,0 +1,110 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #f2f5fb; color: #1f2940; }
+
+.hero {
+  background: linear-gradient(135deg, #3558eb, #7439d8);
+  color: #fff;
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.hero-actions { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+
+button, input, textarea {
+  font: inherit;
+  border-radius: 10px;
+}
+
+button {
+  border: none;
+  padding: .65rem .95rem;
+  background: #3558eb;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button.lucky { background: #ff7a18; }
+
+.container { max-width: 1200px; margin: 1rem auto 2rem; padding: 0 1rem; }
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: .8rem;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 8px 20px rgba(27, 38, 78, 0.08);
+  margin-bottom: 1rem;
+}
+
+label { display: grid; gap: .35rem; font-weight: 600; }
+input, textarea { border: 1px solid #c8d2e5; padding: .55rem; background: #fff; }
+
+.gallery {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(300px, 380px);
+  gap: .85rem;
+  overflow-x: auto;
+  padding-bottom: .5rem;
+  scroll-snap-type: x mandatory;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(25, 40, 84, 0.08);
+  overflow: hidden;
+  scroll-snap-align: start;
+  border: 2px solid transparent;
+}
+
+.card.highlight { border-color: #ff7a18; }
+
+.card-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 3px;
+  background: #d8dfef;
+}
+
+.card-images img {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body { padding: .8rem; }
+.card-body p { margin: .2rem 0; }
+pre { white-space: pre-wrap; margin-top: .4rem; }
+.muted { color: #5a688a; }
+
+dialog {
+  border: none;
+  border-radius: 14px;
+  width: min(720px, 95vw);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .2);
+}
+
+.modal-content { display: grid; gap: .7rem; }
+menu { display: flex; justify-content: flex-end; gap: .5rem; margin: 0; padding: 0; }
+
+.preview-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: .45rem;
+}
+
+.preview-images img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
