@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Recipe Vault</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <h1>Quick Recipe Vault</h1>
+      <p>Save your recipes and instantly pick a random one by tags and calories.</p>
+    </header>
+
+    <main class="layout">
+      <section class="card">
+        <h2>Add a recipe</h2>
+        <form id="recipe-form">
+          <label>
+            Recipe name
+            <input type="text" id="name" required placeholder="e.g. Blueberry Muffins" />
+          </label>
+
+          <label>
+            Calories (whole recipe)
+            <input type="number" id="calories" min="0" required placeholder="e.g. 1200" />
+          </label>
+
+          <label>
+            Tags (comma-separated)
+            <input
+              type="text"
+              id="tags"
+              placeholder="e.g. bakery, low-calorie, hosting-event"
+              required
+            />
+          </label>
+
+          <label>
+            Ingredients (one per line)
+            <textarea
+              id="ingredients"
+              rows="6"
+              required
+              placeholder="2 cups flour\n1 tsp baking soda\n..."
+            ></textarea>
+          </label>
+
+          <label>
+            Cooking instructions
+            <textarea
+              id="instructions"
+              rows="6"
+              required
+              placeholder="1. Preheat oven..."
+            ></textarea>
+          </label>
+
+          <label>
+            Upload screenshot / photo
+            <input type="file" id="image" accept="image/*" />
+          </label>
+
+          <div>
+            <p class="hint strong">Or paste an image directly:</p>
+            <div id="paste-area" class="paste-area" tabindex="0">
+              Click here and press <kbd>Ctrl</kbd> + <kbd>V</kbd> (or <kbd>⌘</kbd> + <kbd>V</kbd>) to paste.
+            </div>
+            <img id="pasted-preview" class="pasted-preview hidden" alt="Pasted preview" />
+          </div>
+
+          <button type="submit">Save recipe</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Random recipe picker</h2>
+
+        <div class="picker-controls">
+          <label>
+            Required tags (comma-separated)
+            <input type="text" id="filter-tags" placeholder="e.g. bakery, hosting-event" />
+          </label>
+
+          <label>
+            Max calories (optional)
+            <input type="number" id="filter-max-calories" min="0" placeholder="e.g. 700" />
+          </label>
+
+          <button type="button" id="pick-random">Pick random recipe</button>
+        </div>
+
+        <article id="random-result" class="result empty">
+          No recipe chosen yet.
+        </article>
+      </section>
+
+      <section class="card full-width">
+        <h2>Saved recipes</h2>
+        <p class="hint">Your recipes are stored in your browser (localStorage).</p>
+        <div id="recipes-list" class="recipes-grid"></div>
+      </section>
+    </main>
+
+    <template id="recipe-card-template">
+      <article class="recipe-card">
+        <img class="recipe-image" alt="Recipe" />
+        <h3 class="recipe-title"></h3>
+        <p class="recipe-meta"></p>
+        <p class="recipe-tags"></p>
+        <details>
+          <summary>Ingredients</summary>
+          <pre class="recipe-ingredients"></pre>
+        </details>
+        <details>
+          <summary>Instructions</summary>
+          <pre class="recipe-instructions"></pre>
+        </details>
+        <button type="button" class="delete-recipe">Delete</button>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
