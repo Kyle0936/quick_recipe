@@ -3,10 +3,13 @@ const APP_BASE_PATH = getAppBasePath();
 const THEME_KEY = 'qrv_theme';
 const LANG_KEY = 'qrv_lang';
 const FORM_KEY = 'qrv_gh';
+const REPO_OWNER = 'kyle0936';
+const REPO_NAME = 'quick_recipe';
+const REPO_BASE = 'main';
 
 const I18N = {
-  en: { app_title:'Quick Recipe Vault',app_subtitle:'Discover recipes in a friendly, visual feed.',theme_toggle:'🌙 Night mode',lucky_button:"🎲 I'm Feeling Hungry",create_recipe:'＋ Create Recipe',search_label:'Search',search_ph:'title / ingredient / instructions',tags_label:'Tags',tags_ph:'choose existing tags',cal_cap:'Calories cap',smart_ing:'Smart ingredient search',smart_ing_ph:'e.g. beef, 牛肉',citation:'Citation link',cal_ph:'e.g. 700',sort_label:'Sort by',sort_newest:'Newest in list',sort_cal_asc:'Calories: low to high',sort_cal_desc:'Calories: high to low',sort_title:'Title: A to Z',clear_filters:'Clear filters',recipe_feed:'Recipe Feed',ingredients:'Ingredients',instructions:'Instructions',close:'Close',create_recipe_title:'Create recipe',recipe_title:'Recipe title',calories:'Calories',tags:'Tags',ingredients_editor:'Ingredients',instructions_editor:'Instructions',demo_editor:'Final dish demo',cancel:'Cancel',create_pr:'Create Pull Request',result_word:'result',results_word:'results',tags_word:'Tags',no_match:'No recipes matched your filters.',untitled:'Untitled recipe',remove_image:'Remove image',edit_recipe:'Edit',github_settings:'GitHub PR settings' },
-  zh: { app_title:'快捷菜谱库',app_subtitle:'用更友好的可视化方式发现菜谱。',theme_toggle:'☀️ 日间模式',lucky_button:'🎲 今天吃什么',create_recipe:'＋ 新建菜谱',search_label:'搜索',search_ph:'标题 / 食材 / 步骤',tags_label:'标签',tags_ph:'仅使用已有标签',cal_cap:'卡路里上限',smart_ing:'智能食材搜索',smart_ing_ph:'例如 牛肉',citation:'原菜谱引用链接',cal_ph:'例如 700',sort_label:'排序',sort_newest:'按列表顺序',sort_cal_asc:'卡路里：低到高',sort_cal_desc:'卡路里：高到低',sort_title:'标题：A 到 Z',clear_filters:'清空筛选',recipe_feed:'菜谱流',ingredients:'食材',instructions:'步骤',close:'关闭',create_recipe_title:'新建菜谱',recipe_title:'菜谱标题',calories:'卡路里',tags:'标签',ingredients_editor:'食材',instructions_editor:'步骤',demo_editor:'成品演示',cancel:'取消',create_pr:'创建 PR',result_word:'条结果',results_word:'条结果',tags_word:'标签',no_match:'没有匹配到菜谱。',untitled:'未命名菜谱',remove_image:'移除图片',edit_recipe:'编辑',github_settings:'GitHub PR 设置' }
+  en: { app_title:'Quick Recipe Vault',app_subtitle:'Discover recipes in a friendly, visual feed.',theme_toggle:'🌙 Night mode',lucky_button:"🎲 I'm Feeling Hungry",create_recipe:'＋ Create Recipe',search_label:'Search',search_ph:'title / ingredient / instructions',tags_label:'Tags',tags_ph:'choose existing tags',cal_cap:'Calories cap',smart_ing:'Smart ingredient search',smart_ing_ph:'e.g. beef, 牛肉',citation:'Citation link',cal_ph:'e.g. 700',sort_label:'Sort by',sort_newest:'Newest in list',sort_cal_asc:'Calories: low to high',sort_cal_desc:'Calories: high to low',sort_title:'Title: A to Z',clear_filters:'Clear filters',recipe_feed:'Recipe Feed',ingredients:'Ingredients',instructions:'Instructions',close:'Close',create_recipe_title:'Create recipe',recipe_title:'Recipe title',calories:'Calories',tags:'Tags',ingredients_editor:'Ingredients',instructions_editor:'Instructions',demo_editor:'Final dish demo',cancel:'Cancel',create_pr:'Create Pull Request',result_word:'result',results_word:'results',tags_word:'Tags',no_match:'No recipes matched your filters.',untitled:'Untitled recipe',remove_image:'Remove image',edit_recipe:'Edit',github_settings:'GitHub PR settings',github_login:'GitHub Login',github_login_hint:'One-time maintainer setup: paste your GitHub Personal Access Token.',save_login:'Save Login' },
+  zh: { app_title:'快捷菜谱库',app_subtitle:'用更友好的可视化方式发现菜谱。',theme_toggle:'☀️ 日间模式',lucky_button:'🎲 今天吃什么',create_recipe:'＋ 新建菜谱',search_label:'搜索',search_ph:'标题 / 食材 / 步骤',tags_label:'标签',tags_ph:'仅使用已有标签',cal_cap:'卡路里上限',smart_ing:'智能食材搜索',smart_ing_ph:'例如 牛肉',citation:'原菜谱引用链接',cal_ph:'例如 700',sort_label:'排序',sort_newest:'按列表顺序',sort_cal_asc:'卡路里：低到高',sort_cal_desc:'卡路里：高到低',sort_title:'标题：A 到 Z',clear_filters:'清空筛选',recipe_feed:'菜谱流',ingredients:'食材',instructions:'步骤',close:'关闭',create_recipe_title:'新建菜谱',recipe_title:'菜谱标题',calories:'卡路里',tags:'标签',ingredients_editor:'食材',instructions_editor:'步骤',demo_editor:'成品演示',cancel:'取消',create_pr:'创建 PR',result_word:'条结果',results_word:'条结果',tags_word:'标签',no_match:'没有匹配到菜谱。',untitled:'未命名菜谱',remove_image:'移除图片',edit_recipe:'编辑',github_settings:'GitHub PR 设置',github_login:'GitHub 登录',github_login_hint:'一次性维护者设置：粘贴你的 GitHub Token（仅保存在当前浏览器）。',save_login:'保存登录' }
 };
 
 
@@ -19,7 +22,7 @@ const INGREDIENT_SYNONYMS = {
 
 const q = (id) => document.getElementById(id);
 const els = {
-  gallery:q('gallery'), template:q('card-template'), resultCount:q('result-count'), chipBar:q('tag-chip-bar'), appVersion:q('app-version'), langSwitch:q('lang-switch'), themeToggle:q('theme-toggle'), search:q('search-input'), tagFilter:q('tag-filter'), calorie:q('calorie-filter'), smartIng:q('smart-ingredient-input'), sort:q('sort-select'), clear:q('clear-filters'), lucky:q('lucky-button'), detailModal:q('recipe-detail-modal'), closeDetail:q('close-detail'), detailTitle:q('detail-title'), detailMeta:q('detail-meta'), detailImages:q('detail-images'), detailIngredients:q('detail-ingredients'), detailInstructions:q('detail-instructions'), detailCitation:q('detail-citation'), detailCitationWrap:q('detail-citation-wrap'), openModal:q('open-modal'), modal:q('recipe-modal'), closeModal:q('close-modal'), form:q('recipe-form'), formTitle:q('form-mode-title'), status:q('form-status'), title:q('m-title'), calories:q('m-calories'), tags:q('m-tags'), citation:q('m-citation'), ing:q('m-ingredients-editor'), ins:q('m-instructions-editor'), demo:q('m-demo-editor'), attachPreview:q('attachment-preview'), knownTags:q('known-tags'), ghOwner:q('gh-owner'), ghRepo:q('gh-repo'), ghBase:q('gh-base'), ghToken:q('gh-token')
+  gallery:q('gallery'), template:q('card-template'), resultCount:q('result-count'), chipBar:q('tag-chip-bar'), appVersion:q('app-version'), langSwitch:q('lang-switch'), themeToggle:q('theme-toggle'), search:q('search-input'), tagFilter:q('tag-filter'), calorie:q('calorie-filter'), smartIng:q('smart-ingredient-input'), sort:q('sort-select'), clear:q('clear-filters'), lucky:q('lucky-button'), detailModal:q('recipe-detail-modal'), closeDetail:q('close-detail'), detailTitle:q('detail-title'), detailMeta:q('detail-meta'), detailImages:q('detail-images'), detailIngredients:q('detail-ingredients'), detailInstructions:q('detail-instructions'), detailCitation:q('detail-citation'), detailCitationWrap:q('detail-citation-wrap'), openModal:q('open-modal'), modal:q('recipe-modal'), closeModal:q('close-modal'), form:q('recipe-form'), formTitle:q('form-mode-title'), status:q('form-status'), title:q('m-title'), calories:q('m-calories'), tags:q('m-tags'), citation:q('m-citation'), ing:q('m-ingredients-editor'), ins:q('m-instructions-editor'), demo:q('m-demo-editor'), attachPreview:q('attachment-preview'), knownTags:q('known-tags'), ghToken:q('gh-token'), loginBtn:q('login-github'), loginModal:q('login-modal'), loginForm:q('login-form'), closeLogin:q('close-login'), loginStatus:q('login-status')
 };
 
 let currentLang = localStorage.getItem(LANG_KEY) || 'en';
@@ -81,6 +84,9 @@ els.closeModal.addEventListener('click', () => els.modal.close());
 els.closeDetail.addEventListener('click', () => els.detailModal.close());
 els.attachPreview.addEventListener('click', (e) => { const b=e.target.closest('[data-remove-attachment]'); if (b) removeAttachment(b.dataset.removeAttachment); });
 els.form.addEventListener('submit', submitRecipe);
+els.loginBtn.addEventListener('click', () => els.loginModal.showModal());
+els.closeLogin.addEventListener('click', () => els.loginModal.close());
+els.loginForm.addEventListener('submit', saveLogin);
 
 function applyLanguage() {
   const d = I18N[currentLang];
@@ -166,8 +172,8 @@ async function submitRecipe(e){
   if(!title){ els.status.textContent='Title is required'; return; }
   if(!tags.length){ els.status.textContent=currentLang==='zh'?'标签必须从已有标签中选择':'Tags must be chosen from existing tags'; return; }
 
-  const owner=els.ghOwner.value.trim(); const repo=els.ghRepo.value.trim(); const base=els.ghBase.value.trim()||'main'; const token=els.ghToken.value.trim();
-  if(!owner || !repo || !token){ els.status.textContent=currentLang==='zh'?'请填写 GitHub 信息和 token':'Please fill GitHub settings and token'; return; }
+  const owner=REPO_OWNER; const repo=REPO_NAME; const base=REPO_BASE; const token=els.ghToken.value.trim();
+  if(!token){ els.status.textContent=currentLang==='zh'?'请先点击 GitHub Login 设置 token':'Please click GitHub Login and set token first'; els.loginModal.showModal(); return; }
   saveGhDefaults();
 
   const fileName=toRecipeFileName(title)+'.md';
@@ -252,5 +258,6 @@ function ingredientMatch(recipe, smartTerms) {
 function resolveRepoUrl(path){ return `${window.location.origin}${APP_BASE_PATH}${path.replace(/^\.\//,'').replace(/^\//,'')}`; }
 function getAppBasePath(){ const p=window.location.pathname; if(p.endsWith('/')) return p; const last=p.split('/').pop()||''; return last.includes('.')?p.slice(0,p.lastIndexOf('/')+1):`${p}/`; }
 function placeholder(n){ return `https://placehold.co/1200x800?text=${encodeURIComponent(n)}`; }
-function loadGhDefaults(){ try { const v=JSON.parse(localStorage.getItem(FORM_KEY)||'{}'); els.ghOwner.value=v.owner||''; els.ghRepo.value=v.repo||''; els.ghBase.value=v.base||'main'; } catch {} }
-function saveGhDefaults(){ localStorage.setItem(FORM_KEY, JSON.stringify({ owner:els.ghOwner.value.trim(), repo:els.ghRepo.value.trim(), base:els.ghBase.value.trim()||'main' })); }
+function loadGhDefaults(){ try { const v=JSON.parse(localStorage.getItem(FORM_KEY)||'{}'); els.ghToken.value=v.token||''; } catch {} }
+function saveGhDefaults(){ localStorage.setItem(FORM_KEY, JSON.stringify({ token:els.ghToken.value.trim() })); }
+function saveLogin(e){ e.preventDefault(); saveGhDefaults(); els.loginStatus.textContent = currentLang==='zh'?'登录已保存':'Login saved'; setTimeout(()=>els.loginModal.close(),400); }

@@ -56,7 +56,8 @@ dialog { border: none; border-radius: 16px; width: min(980px,95vw); background: 
 .small { font-size: .82rem; padding: .35rem .55rem; }
 
 .attachment-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .5rem; }
-.attachment-chip { border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--card) 75%, #f8f9ff); padding: .45rem; display: grid; gap: .3rem; }
+.attachment-chip { border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--card) 75%, #f8f9ff); padding: .45rem; display: grid; gap: .3rem; max-width: 100%; }
+.attachment-chip span { word-break: break-all; font-size: .95rem; }
 .attachment-chip img { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 8px; }
 .detail-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: .65rem; align-items: start; }
 .detail-images img { width: 100%; height: auto; max-height: 55vh; object-fit: contain; border-radius: 12px; border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 70%, #d9e3fb); }

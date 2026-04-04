@@ -18,6 +18,7 @@
         <button id="theme-toggle" class="clear" data-i18n="theme_toggle">🌙 Night mode</button>
         <button id="lucky-button" class="lucky" data-i18n="lucky_button">🎲 I'm Feeling Hungry</button>
         <button id="open-modal" data-i18n="create_recipe">＋ Create Recipe</button>
+        <button id="login-github" class="clear" data-i18n="github_login">GitHub Login</button>
       </div>
     </header>
 
@@ -73,18 +74,24 @@
         <label data-i18n="demo_editor">成品演示<div id="m-demo-editor" class="rich-editor" contenteditable="true" data-editor="demo"></div></label>
         <div id="attachment-preview" class="attachment-preview"></div>
 
-        <details>
-          <summary data-i18n="github_settings">GitHub PR settings</summary>
-          <label>Repo owner <input id="gh-owner" placeholder="kyle0936" /></label>
-          <label>Repo name <input id="gh-repo" placeholder="quick_recipe" /></label>
-          <label>Base branch <input id="gh-base" value="main" /></label>
-          <label>GitHub token <input id="gh-token" type="password" placeholder="ghp_..." /></label>
-        </details>
-
         <p id="form-status" class="muted"></p>
         <menu>
           <button type="button" id="close-modal" data-i18n="cancel">Cancel</button>
           <button type="submit" id="submit-pr" data-i18n="create_pr">Create Pull Request</button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <dialog id="login-modal">
+      <form id="login-form" class="modal-content">
+        <h3 data-i18n="github_login">GitHub Login</h3>
+        <p class="muted" data-i18n="github_login_hint">One-time maintainer setup: paste your GitHub Personal Access Token. It is saved only in this browser.</p>
+        <label>Token <input id="gh-token" type="password" placeholder="ghp_..." required /></label>
+        <p id="login-status" class="muted"></p>
+        <menu>
+          <button type="button" id="close-login" data-i18n="cancel">Cancel</button>
+          <button type="submit" data-i18n="save_login">Save Login</button>
         </menu>
       </form>
     </dialog>

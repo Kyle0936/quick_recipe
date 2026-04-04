@@ -44,7 +44,7 @@ images:
 
 1. Open the website and click **Create Recipe** (or edit an existing one via the card edit button).
 2. Fill the form; tags must come from known tags in `recipes/metadata.json`, and optionally add a citation link to the original recipe.
-3. Configure GitHub owner/repo/base branch + token in **GitHub PR settings**.
+3. Click **GitHub Login** once and save your token in browser-local settings (owner/repo are fixed to this repo).
 4. Click **Create Pull Request** to create/update markdown in `/recipes` and update `recipes/index.json` on a new branch with an auto-created PR.
 
 ## Run locally
@@ -87,3 +87,10 @@ Checklist:
 ## GitHub Pages 404 fix for `recipes/*.md`
 
 If you see 404 for markdown recipe files on GitHub Pages, keep a `.nojekyll` file in repo root so Pages serves markdown files as static assets.
+
+
+## Auto-approve recipe markdown PRs
+
+This repo includes `.github/workflows/auto-approve-recipes.yml` to auto-approve PRs that only modify `recipes/*.md`.
+
+To enable it, set repository secret `RECIPE_BOT_TOKEN` (PAT from a bot/user that has permission to review PRs).
