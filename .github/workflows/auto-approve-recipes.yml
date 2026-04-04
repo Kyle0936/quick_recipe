@@ -1,0 +1,70 @@
+name: Auto-approve and auto-merge recipe-only PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  recipe-bot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login != 'github-actions[bot]'
+    steps:
+      - name: Collect changed files
+        id: files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100
+            });
+            const names = files.map(f => f.filename);
+            const recipeOnly = names.length > 0 && names.every(n => /^recipes\/.*\.md$/.test(n));
+            core.setOutput('recipe_only', recipeOnly ? 'true' : 'false');
+            core.setOutput('names', JSON.stringify(names));
+
+      - name: Approve PR (recipe-only)
+        if: steps.files.outputs.recipe_only == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            await github.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
+              owner,
+              repo,
+              pull_number,
+              event: 'APPROVE',
+              body: 'Auto-approved: PR only changes recipe markdown files.'
+            });
+
+      - name: Merge PR (recipe-only)
+        if: steps.files.outputs.recipe_only == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            // Re-fetch to ensure latest mergeability state
+            const pr = await github.rest.pulls.get({ owner, repo, pull_number });
+            if (pr.data.draft) {
+              core.info('PR is draft; skip merge.');
+              return;
+            }
+
+            try {
+              await github.rest.pulls.merge({
+                owner,
+                repo,
+                pull_number,
+                merge_method: 'squash'
+              });
+              core.info('Recipe-only PR auto-merged.');
+            } catch (error) {
+              core.setFailed(`Auto-merge failed: ${error.message}`);
+            }
