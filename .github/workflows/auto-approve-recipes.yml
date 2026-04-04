@@ -4,6 +4,10 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   recipe-bot:
     runs-on: ubuntu-latest
@@ -13,6 +17,7 @@ jobs:
         id: files
         uses: actions/github-script@v8
         with:
+          github-token: ${{ github.token }}
           script: |
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
@@ -23,38 +28,26 @@ jobs:
             const names = files.map(f => f.filename);
             const recipeOnly = names.length > 0 && names.every(n => n.startsWith('recipes/'));
             core.setOutput('recipe_only', recipeOnly ? 'true' : 'false');
-            core.setOutput('names', JSON.stringify(names));
 
-      - name: Approve PR (recipe-only)
+      - name: Approve + merge PR (recipe-only)
         if: steps.files.outputs.recipe_only == 'true'
         uses: actions/github-script@v8
         with:
-          github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
-          script: |
-            const { owner, repo } = context.repo;
-            const pull_number = context.payload.pull_request.number;
-            await github.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
-              owner,
-              repo,
-              pull_number,
-              event: 'APPROVE',
-              body: 'Auto-approved: PR only changes recipe markdown files.'
-            });
-
-      - name: Merge PR (recipe-only)
-        if: steps.files.outputs.recipe_only == 'true'
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
+          github-token: ${{ github.token }}
           script: |
             const { owner, repo } = context.repo;
             const pull_number = context.payload.pull_request.number;
 
-            // Re-fetch to ensure latest mergeability state
-            const pr = await github.rest.pulls.get({ owner, repo, pull_number });
-            if (pr.data.draft) {
-              core.info('PR is draft; skip merge.');
-              return;
+            try {
+              await github.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
+                owner,
+                repo,
+                pull_number,
+                event: 'APPROVE',
+                body: 'Auto-approved: PR only changes recipe files.'
+              });
+            } catch (error) {
+              core.warning(`Approve skipped: ${error.message}`);
             }
 
             try {
@@ -62,23 +55,24 @@ jobs:
               core.info('Recipe-only PR auto-merged immediately.');
             } catch (error) {
               core.info(`Immediate merge failed: ${error.message}`);
-              // Fallback: enable auto-merge if branch protections/checks are pending
-              const prNode = await github.graphql(`
-                query($owner:String!, $repo:String!, $number:Int!) {
-                  repository(owner:$owner, name:$repo) {
-                    pullRequest(number:$number) { id }
+              try {
+                const prNode = await github.graphql(`
+                  query($owner:String!, $repo:String!, $number:Int!) {
+                    repository(owner:$owner, name:$repo) {
+                      pullRequest(number:$number) { id }
+                    }
                   }
-                }
-              `, { owner, repo, number: pull_number });
+                `, { owner, repo, number: pull_number });
 
-              const prId = prNode.repository.pullRequest.id;
-              await github.graphql(`
-                mutation($pullRequestId:ID!) {
-                  enablePullRequestAutoMerge(input:{pullRequestId:$pullRequestId, mergeMethod:SQUASH}) {
-                    clientMutationId
+                await github.graphql(`
+                  mutation($pullRequestId:ID!) {
+                    enablePullRequestAutoMerge(input:{pullRequestId:$pullRequestId, mergeMethod:SQUASH}) {
+                      clientMutationId
+                    }
                   }
-                }
-              `, { pullRequestId: prId });
-
-              core.info('Auto-merge enabled for recipe-only PR.');
+                `, { pullRequestId: prNode.repository.pullRequest.id });
+                core.info('Auto-merge enabled for recipe-only PR.');
+              } catch (fallbackError) {
+                core.warning(`Auto-merge fallback skipped: ${fallbackError.message}`);
+              }
             }

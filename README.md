@@ -94,4 +94,4 @@ If you see 404 for markdown recipe files on GitHub Pages, keep a `.nojekyll` fil
 
 This repo includes `.github/workflows/auto-approve-recipes.yml` to auto-approve and auto-merge PRs that only modify `recipes/*.md`.
 
-To enable it, set repository secret `RECIPE_BOT_TOKEN` (PAT from a bot/user that has permission to review and merge PRs).
+Workflow now uses default `github.token` with repository `contents:write` and `pull-requests:write` permissions. Optional bot token is no longer required.

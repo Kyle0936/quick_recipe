@@ -170,8 +170,6 @@ async function submitRecipe(e){
   const title=els.title.value.trim();
   const tags=normalizeTags(els.tags.value);
   if(!title){ els.status.textContent='Title is required'; return; }
-  if(!tags.length){ els.status.textContent=currentLang==='zh'?'标签必须从已有标签中选择':'Tags must be chosen from existing tags'; return; }
-
   const owner=REPO_OWNER; const repo=REPO_NAME; const base=REPO_BASE; const token=els.ghToken.value.trim();
   if(!token){ els.status.textContent=currentLang==='zh'?'请先点击 GitHub Login 设置 token':'Please click GitHub Login and set token first'; els.loginModal.showModal(); return; }
   saveGhDefaults();
