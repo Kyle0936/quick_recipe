@@ -85,6 +85,16 @@ dialog::backdrop { background: color-mix(in srgb, #090f1d 70%, transparent); bac
 .detail-modal-content {
   background: linear-gradient(180deg, color-mix(in srgb, var(--modal-surface) 86%, var(--modal-muted)), var(--modal-surface));
 }
+.detail-card {
+  background: color-mix(in srgb, var(--modal-surface) 88%, var(--modal-muted));
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: 14px;
+  padding: .9rem;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--modal-shadow) 18%, transparent);
+}
+.detail-card h4 { margin: 0 0 .55rem; letter-spacing: .2px; }
+.detail-meta-card { padding: .8rem .9rem; }
+.detail-meta-card #detail-meta { font-size: 1.05rem; }
 .detail-header {
   position: sticky;
   top: -1rem;
@@ -104,9 +114,8 @@ dialog::backdrop { background: color-mix(in srgb, #090f1d 70%, transparent); bac
   gap: .65rem;
   overflow-x: auto;
   padding: .3rem;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--modal-muted) 78%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--modal-muted) 84%, transparent);
 }
 .detail-images img {
   flex: 0 0 auto;
@@ -118,6 +127,24 @@ dialog::backdrop { background: color-mix(in srgb, #090f1d 70%, transparent); bac
   border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
   background: color-mix(in srgb, var(--card) 78%, #d9e3fb);
 }
+#recipe-form.modal-content > label,
+#recipe-form.modal-content > .attachment-preview,
+#recipe-form.modal-content > p,
+#recipe-form.modal-content > menu {
+  background: color-mix(in srgb, var(--modal-surface) 88%, var(--modal-muted));
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: 12px;
+  padding: .75rem;
+}
+#recipe-form.modal-content > label > input,
+#recipe-form.modal-content > label > .rich-editor {
+  margin-top: .4rem;
+}
+#recipe-form.modal-content > h3 {
+  margin: 0;
+  padding: .2rem 0 .35rem;
+}
+#recipe-form menu { background: transparent; border: none; padding: 0; }
 menu { display: flex; justify-content: flex-end; gap: .5rem; margin: 0; padding: 0; }
 .muted { color: var(--sub); margin: 0; }
 @media (max-width: 700px) {

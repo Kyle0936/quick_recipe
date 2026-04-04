@@ -60,7 +60,36 @@
 
     <footer class="footer"><small id="app-version"></small></footer>
 
-    <dialog id="recipe-detail-modal"><div class="modal-content detail-modal-content"><div class="detail-header"><h3 id="detail-title"></h3><button id="close-detail" class="clear small" data-i18n="close">Close</button></div><p id="detail-meta" class="muted"></p><div id="detail-images" class="detail-images"></div><h4 data-i18n="ingredients">Ingredients</h4><pre id="detail-ingredients"></pre><h4 data-i18n="instructions">Instructions</h4><pre id="detail-instructions"></pre><p id="detail-citation-wrap" class="muted"><a id="detail-citation" target="_blank" rel="noopener"></a></p></div></dialog>
+    <dialog id="recipe-detail-modal">
+      <div class="modal-content detail-modal-content">
+        <div class="detail-header">
+          <h3 id="detail-title"></h3>
+          <button id="close-detail" class="clear small" data-i18n="close">Close</button>
+        </div>
+
+        <section class="detail-card detail-meta-card">
+          <p id="detail-meta" class="muted"></p>
+        </section>
+
+        <section class="detail-card">
+          <div id="detail-images" class="detail-images"></div>
+        </section>
+
+        <section class="detail-card">
+          <h4 data-i18n="ingredients">Ingredients</h4>
+          <pre id="detail-ingredients"></pre>
+        </section>
+
+        <section class="detail-card">
+          <h4 data-i18n="instructions">Instructions</h4>
+          <pre id="detail-instructions"></pre>
+        </section>
+
+        <section id="detail-citation-wrap" class="detail-card muted">
+          <a id="detail-citation" target="_blank" rel="noopener"></a>
+        </section>
+      </div>
+    </dialog>
 
     <dialog id="recipe-modal">
       <form id="recipe-form" class="modal-content">
