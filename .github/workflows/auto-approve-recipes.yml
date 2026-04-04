@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Collect changed files
         id: files
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -21,13 +21,13 @@ jobs:
               per_page: 100
             });
             const names = files.map(f => f.filename);
-            const recipeOnly = names.length > 0 && names.every(n => /^recipes\/.*\.md$/.test(n));
+            const recipeOnly = names.length > 0 && names.every(n => n.startsWith('recipes/'));
             core.setOutput('recipe_only', recipeOnly ? 'true' : 'false');
             core.setOutput('names', JSON.stringify(names));
 
       - name: Approve PR (recipe-only)
         if: steps.files.outputs.recipe_only == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
           script: |
@@ -43,7 +43,7 @@ jobs:
 
       - name: Merge PR (recipe-only)
         if: steps.files.outputs.recipe_only == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.RECIPE_BOT_TOKEN }}
           script: |
@@ -58,13 +58,27 @@ jobs:
             }
 
             try {
-              await github.rest.pulls.merge({
-                owner,
-                repo,
-                pull_number,
-                merge_method: 'squash'
-              });
-              core.info('Recipe-only PR auto-merged.');
+              await github.rest.pulls.merge({ owner, repo, pull_number, merge_method: 'squash' });
+              core.info('Recipe-only PR auto-merged immediately.');
             } catch (error) {
-              core.setFailed(`Auto-merge failed: ${error.message}`);
+              core.info(`Immediate merge failed: ${error.message}`);
+              // Fallback: enable auto-merge if branch protections/checks are pending
+              const prNode = await github.graphql(`
+                query($owner:String!, $repo:String!, $number:Int!) {
+                  repository(owner:$owner, name:$repo) {
+                    pullRequest(number:$number) { id }
+                  }
+                }
+              `, { owner, repo, number: pull_number });
+
+              const prId = prNode.repository.pullRequest.id;
+              await github.graphql(`
+                mutation($pullRequestId:ID!) {
+                  enablePullRequestAutoMerge(input:{pullRequestId:$pullRequestId, mergeMethod:SQUASH}) {
+                    clientMutationId
+                  }
+                }
+              `, { pullRequestId: prId });
+
+              core.info('Auto-merge enabled for recipe-only PR.');
             }

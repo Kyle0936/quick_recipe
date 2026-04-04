@@ -22,7 +22,7 @@ const INGREDIENT_SYNONYMS = {
 
 const q = (id) => document.getElementById(id);
 const els = {
-  gallery:q('gallery'), template:q('card-template'), resultCount:q('result-count'), chipBar:q('tag-chip-bar'), appVersion:q('app-version'), langSwitch:q('lang-switch'), themeToggle:q('theme-toggle'), search:q('search-input'), tagFilter:q('tag-filter'), calorie:q('calorie-filter'), smartIng:q('smart-ingredient-input'), sort:q('sort-select'), clear:q('clear-filters'), lucky:q('lucky-button'), detailModal:q('recipe-detail-modal'), closeDetail:q('close-detail'), detailTitle:q('detail-title'), detailMeta:q('detail-meta'), detailImages:q('detail-images'), detailIngredients:q('detail-ingredients'), detailInstructions:q('detail-instructions'), detailCitation:q('detail-citation'), detailCitationWrap:q('detail-citation-wrap'), openModal:q('open-modal'), modal:q('recipe-modal'), closeModal:q('close-modal'), form:q('recipe-form'), formTitle:q('form-mode-title'), status:q('form-status'), title:q('m-title'), calories:q('m-calories'), tags:q('m-tags'), citation:q('m-citation'), ing:q('m-ingredients-editor'), ins:q('m-instructions-editor'), demo:q('m-demo-editor'), attachPreview:q('attachment-preview'), knownTags:q('known-tags'), ghToken:q('gh-token'), loginBtn:q('login-github'), loginModal:q('login-modal'), loginForm:q('login-form'), closeLogin:q('close-login'), loginStatus:q('login-status')
+  gallery:q('gallery'), template:q('card-template'), resultCount:q('result-count'), chipBar:q('tag-chip-bar'), appVersion:q('app-version'), langSwitch:q('lang-switch'), themeToggle:q('theme-toggle'), search:q('search-input'), tagFilter:q('tag-filter'), calorie:q('calorie-filter'), smartIng:q('smart-ingredient-input'), sort:q('sort-select'), clear:q('clear-filters'), lucky:q('lucky-button'), detailModal:q('recipe-detail-modal'), closeDetail:q('close-detail'), detailTitle:q('detail-title'), detailMeta:q('detail-meta'), detailImages:q('detail-images'), detailIngredients:q('detail-ingredients'), detailInstructions:q('detail-instructions'), detailCitation:q('detail-citation'), detailCitationWrap:q('detail-citation-wrap'), openModal:q('open-modal'), modal:q('recipe-modal'), closeModal:q('close-modal'), form:q('recipe-form'), formTitle:q('form-mode-title'), status:q('form-status'), title:q('m-title'), calories:q('m-calories'), tags:q('m-tags'), citation:q('m-citation'), recipePath:q('m-recipe-path'), ing:q('m-ingredients-editor'), ins:q('m-instructions-editor'), demo:q('m-demo-editor'), attachPreview:q('attachment-preview'), knownTags:q('known-tags'), ghToken:q('gh-token'), loginBtn:q('login-github'), loginModal:q('login-modal'), loginForm:q('login-form'), closeLogin:q('close-login'), loginStatus:q('login-status')
 };
 
 let currentLang = localStorage.getItem(LANG_KEY) || 'en';
@@ -148,8 +148,8 @@ function openDetail(r){ const d=I18N[currentLang]; els.detailTitle.textContent=r
   els.detailImages.innerHTML=''; (r.images.length?r.images:[placeholder(r.title)]).forEach((s)=>{ const i=document.createElement('img'); i.src=s; els.detailImages.append(i); }); els.detailModal.showModal(); }
 function pickLucky(){ if(!filtered.length) return; openDetail(filtered[Math.floor(Math.random()*filtered.length)]); }
 
-function openCreateModal(){ editRecipe=null; els.formTitle.textContent=I18N[currentLang].create_recipe_title; resetForm(); els.modal.showModal(); }
-function openEditModal(r){ editRecipe=r; resetForm(); els.formTitle.textContent=`${I18N[currentLang].edit_recipe}: ${r.title}`; els.title.value=r.title; els.calories.value=r.calories; els.tags.value=r.tags.join(', '); els.citation.value=r.citation || ''; els.ing.innerText=r.ingredients; els.ins.innerText=r.instructions; els.demo.innerText=''; els.modal.showModal(); }
+function openCreateModal(){ editRecipe=null; els.formTitle.textContent=I18N[currentLang].create_recipe_title; resetForm(); els.recipePath.value=''; els.modal.showModal(); }
+function openEditModal(r){ editRecipe=r; resetForm(); els.recipePath.value = r.path || ''; els.formTitle.textContent=`${I18N[currentLang].edit_recipe}: ${r.title}`; els.title.value=r.title; els.calories.value=r.calories; els.tags.value=r.tags.join(', '); els.citation.value=r.citation || ''; els.ing.innerText=r.ingredients; els.ins.innerText=r.instructions; els.demo.innerText=''; els.modal.showModal(); }
 function resetForm(){ els.form.reset(); els.ing.innerHTML=''; els.ins.innerHTML=''; els.demo.innerHTML=''; attachments=[]; renderAttachments(); els.status.textContent=''; }
 
 function pasteImages(e, section){
@@ -177,7 +177,7 @@ async function submitRecipe(e){
   saveGhDefaults();
 
   const fileName=toRecipeFileName(title)+'.md';
-  const recipePath = editRecipe?.path || `recipes/${fileName}`;
+  const recipePath = els.recipePath.value || editRecipe?.path || `recipes/${fileName}`;
   const slug = toRecipeFileName(title);
   const markdown = buildMarkdown({
     title, calories:Number(els.calories.value||0), tags, citation: els.citation.value.trim(),
