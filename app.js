@@ -1,4 +1,4 @@
-const BUILD_VERSION = '2026-04-04-b';
+const BUILD_VERSION = '2026-04-04-c';
 const APP_BASE_PATH = getAppBasePath();
 const THEME_KEY = 'qrv_theme';
 const LANG_KEY = 'qrv_lang';
@@ -8,8 +8,8 @@ const REPO_NAME = 'quick_recipe';
 const REPO_BASE = 'main';
 
 const I18N = {
-  en: { app_title:'Quick Recipe Vault',app_subtitle:'Discover recipes in a friendly, visual feed.',theme_toggle:'🌙 Night mode',lucky_button:"🎲 I'm Feeling Hungry",create_recipe:'＋ Create Recipe',search_label:'Search',search_ph:'title / ingredient / instructions',tags_label:'Tags',tags_ph:'choose existing tags',cal_cap:'Calories cap',smart_ing:'Smart ingredient search',smart_ing_ph:'e.g. beef, 牛肉',citation:'Citation link',cal_ph:'e.g. 700',sort_label:'Sort by',sort_newest:'Newest in list',sort_cal_asc:'Calories: low to high',sort_cal_desc:'Calories: high to low',sort_title:'Title: A to Z',clear_filters:'Clear filters',recipe_feed:'Recipe Feed',ingredients:'Ingredients',instructions:'Instructions',close:'Close',create_recipe_title:'Create recipe',recipe_title:'Recipe title',calories:'Calories',tags:'Tags',ingredients_editor:'Ingredients',instructions_editor:'Instructions',demo_editor:'Final dish demo',cancel:'Cancel',create_pr:'Create Pull Request',result_word:'result',results_word:'results',tags_word:'Tags',no_match:'No recipes matched your filters.',untitled:'Untitled recipe',remove_image:'Remove image',edit_recipe:'Edit',github_settings:'GitHub PR settings',github_login:'GitHub Login',github_login_hint:'One-time maintainer setup: paste your GitHub Personal Access Token.',save_login:'Save Login' },
-  zh: { app_title:'快捷菜谱库',app_subtitle:'用更友好的可视化方式发现菜谱。',theme_toggle:'☀️ 日间模式',lucky_button:'🎲 今天吃什么',create_recipe:'＋ 新建菜谱',search_label:'搜索',search_ph:'标题 / 食材 / 步骤',tags_label:'标签',tags_ph:'仅使用已有标签',cal_cap:'卡路里上限',smart_ing:'智能食材搜索',smart_ing_ph:'例如 牛肉',citation:'原菜谱引用链接',cal_ph:'例如 700',sort_label:'排序',sort_newest:'按列表顺序',sort_cal_asc:'卡路里：低到高',sort_cal_desc:'卡路里：高到低',sort_title:'标题：A 到 Z',clear_filters:'清空筛选',recipe_feed:'菜谱流',ingredients:'食材',instructions:'步骤',close:'关闭',create_recipe_title:'新建菜谱',recipe_title:'菜谱标题',calories:'卡路里',tags:'标签',ingredients_editor:'食材',instructions_editor:'步骤',demo_editor:'成品演示',cancel:'取消',create_pr:'创建 PR',result_word:'条结果',results_word:'条结果',tags_word:'标签',no_match:'没有匹配到菜谱。',untitled:'未命名菜谱',remove_image:'移除图片',edit_recipe:'编辑',github_settings:'GitHub PR 设置',github_login:'GitHub 登录',github_login_hint:'一次性维护者设置：粘贴你的 GitHub Token（仅保存在当前浏览器）。',save_login:'保存登录' }
+  en: { app_title:'Quick Recipe Vault',app_subtitle:'Discover recipes in a friendly, visual feed.',theme_toggle:'🌙 Night mode',lucky_button:"🎲 I'm Feeling Hungry",create_recipe:'＋ Create Recipe',search_label:'Search',search_ph:'title / ingredient / instructions',tags_label:'Tags',tags_ph:'choose existing tags',cal_cap:'Calories cap',smart_ing:'Smart ingredient search',smart_ing_ph:'e.g. beef, 牛肉',citation:'Citation link',cal_ph:'e.g. 700',sort_label:'Sort by',sort_newest:'Newest in list',sort_cal_asc:'Calories: low to high',sort_cal_desc:'Calories: high to low',sort_title:'Title: A to Z',clear_filters:'Clear filters',recipe_feed:'Recipe Feed',ingredients:'Ingredients',instructions:'Instructions',close:'Close',create_recipe_title:'Create recipe',recipe_title:'Recipe title',calories:'Calories',tags:'Tags',ingredients_editor:'Ingredients',instructions_editor:'Instructions',demo_editor:'Final dish demo',cancel:'Cancel',create_pr:'Create Pull Request',result_word:'result',results_word:'results',tags_word:'Tags',no_match:'No recipes matched your filters.',untitled:'Untitled recipe',remove_image:'Remove image',edit_recipe:'Edit',github_settings:'GitHub PR settings',github_login:'GitHub Login',github_login_hint:'One-time maintainer setup: paste your GitHub Personal Access Token.',save_login:'Save Login',duplicate_recipe:'A recipe with the same title already exists. Please rename it.' },
+  zh: { app_title:'快捷菜谱库',app_subtitle:'用更友好的可视化方式发现菜谱。',theme_toggle:'☀️ 日间模式',lucky_button:'🎲 今天吃什么',create_recipe:'＋ 新建菜谱',search_label:'搜索',search_ph:'标题 / 食材 / 步骤',tags_label:'标签',tags_ph:'仅使用已有标签',cal_cap:'卡路里上限',smart_ing:'智能食材搜索',smart_ing_ph:'例如 牛肉',citation:'原菜谱引用链接',cal_ph:'例如 700',sort_label:'排序',sort_newest:'按列表顺序',sort_cal_asc:'卡路里：低到高',sort_cal_desc:'卡路里：高到低',sort_title:'标题：A 到 Z',clear_filters:'清空筛选',recipe_feed:'菜谱流',ingredients:'食材',instructions:'步骤',close:'关闭',create_recipe_title:'新建菜谱',recipe_title:'菜谱标题',calories:'卡路里',tags:'标签',ingredients_editor:'食材',instructions_editor:'步骤',demo_editor:'成品演示',cancel:'取消',create_pr:'创建 PR',result_word:'条结果',results_word:'条结果',tags_word:'标签',no_match:'没有匹配到菜谱。',untitled:'未命名菜谱',remove_image:'移除图片',edit_recipe:'编辑',github_settings:'GitHub PR 设置',github_login:'GitHub 登录',github_login_hint:'一次性维护者设置：粘贴你的 GitHub Token（仅保存在当前浏览器）。',save_login:'保存登录',duplicate_recipe:'已存在同名菜谱，请修改标题后再提交。' }
 };
 
 
@@ -199,6 +199,10 @@ async function submitRecipe(e){
   const title=els.title.value.trim();
   const tags=normalizeTags(els.tags.value);
   if(!title){ els.status.textContent='Title is required'; return; }
+  if (isDuplicateRecipeTitle(title, editRecipe?.path)) {
+    els.status.textContent = I18N[currentLang].duplicate_recipe;
+    return;
+  }
   const owner=REPO_OWNER; const repo=REPO_NAME; const base=REPO_BASE; const token=els.ghToken.value.trim();
   if(!token){ els.status.textContent=currentLang==='zh'?'请先点击 GitHub Login 设置 token':'Please click GitHub Login and set token first'; els.loginModal.showModal(); return; }
   saveGhDefaults();
@@ -337,6 +341,11 @@ function dedupeRecipePaths(paths){
     out.push(clean);
   }
   return out;
+}
+
+function isDuplicateRecipeTitle(title, currentPath) {
+  const normalized = title.trim().toLowerCase();
+  return recipes.some((r) => r.title.trim().toLowerCase() === normalized && r.path !== currentPath);
 }
 
 function resolveRepoUrl(path){ return `${window.location.origin}${APP_BASE_PATH}${path.replace(/^\.\//,'').replace(/^\//,'')}`; }

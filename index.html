@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quick Recipe Vault</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8D%B2%3C/text%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="styles.css?v=20260404b" />
+    <link rel="stylesheet" href="styles.css?v=20260404c" />
   </head>
   <body>
     <header class="topbar">
@@ -60,7 +60,7 @@
 
     <footer class="footer"><small id="app-version"></small></footer>
 
-    <dialog id="recipe-detail-modal"><div class="modal-content"><h3 id="detail-title"></h3><p id="detail-meta" class="muted"></p><div id="detail-images" class="detail-images"></div><h4 data-i18n="ingredients">Ingredients</h4><pre id="detail-ingredients"></pre><h4 data-i18n="instructions">Instructions</h4><pre id="detail-instructions"></pre><p id="detail-citation-wrap" class="muted"><a id="detail-citation" target="_blank" rel="noopener"></a></p><button id="close-detail" data-i18n="close">Close</button></div></dialog>
+    <dialog id="recipe-detail-modal"><div class="modal-content detail-modal-content"><div class="detail-header"><h3 id="detail-title"></h3><button id="close-detail" class="clear small" data-i18n="close">Close</button></div><p id="detail-meta" class="muted"></p><div id="detail-images" class="detail-images"></div><h4 data-i18n="ingredients">Ingredients</h4><pre id="detail-ingredients"></pre><h4 data-i18n="instructions">Instructions</h4><pre id="detail-instructions"></pre><p id="detail-citation-wrap" class="muted"><a id="detail-citation" target="_blank" rel="noopener"></a></p></div></dialog>
 
     <dialog id="recipe-modal">
       <form id="recipe-form" class="modal-content">
@@ -110,6 +110,6 @@
       </article>
     </template>
 
-    <script src="app.js?v=20260404b"></script>
+    <script src="app.js?v=20260404c"></script>
   </body>
 </html>
