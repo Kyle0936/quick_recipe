@@ -1,0 +1,86 @@
+name: Cleanup merged branches
+
+on:
+  pull_request_target:
+    types: [closed]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  prune-merged-branches:
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old merged branches (keep latest 10)
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const keepCount = 10;
+
+            const repoInfo = await github.rest.repos.get({ owner, repo });
+            const defaultBranch = repoInfo.data.default_branch;
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner,
+              repo,
+              per_page: 100
+            });
+
+            const candidates = branches.filter((b) => !b.protected && b.name !== defaultBranch);
+            if (!candidates.length) {
+              core.info('No candidate branches to evaluate.');
+              return;
+            }
+
+            const merged = [];
+            for (const b of candidates) {
+              const prs = await github.rest.pulls.list({
+                owner,
+                repo,
+                state: 'closed',
+                head: `${owner}:${b.name}`,
+                per_page: 30
+              });
+
+              const hasMergedPr = prs.data.some((pr) => pr.merged_at);
+              if (!hasMergedPr) continue;
+
+              const commit = await github.rest.repos.getCommit({ owner, repo, ref: b.commit.sha });
+              const commitDate = commit.data.commit.committer?.date || commit.data.commit.author?.date || '1970-01-01T00:00:00Z';
+
+              merged.push({
+                name: b.name,
+                sha: b.commit.sha,
+                date: commitDate
+              });
+            }
+
+            if (merged.length <= keepCount) {
+              core.info(`Merged branches found: ${merged.length}. Nothing to prune (keep ${keepCount}).`);
+              return;
+            }
+
+            merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const toDelete = merged.slice(keepCount);
+
+            for (const branch of toDelete) {
+              try {
+                await github.rest.git.deleteRef({
+                  owner,
+                  repo,
+                  ref: `heads/${branch.name}`
+                });
+                core.info(`Deleted merged branch: ${branch.name}`);
+              } catch (error) {
+                core.warning(`Failed to delete ${branch.name}: ${error.message}`);
+              }
+            }
+
+            core.info(`Deleted ${toDelete.length} merged branches. Kept latest ${keepCount}.`);
