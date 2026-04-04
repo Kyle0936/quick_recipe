@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Recipe Vault</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8D%B2%3C/text%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css?v=20260404b" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <h1 data-i18n="app_title">Quick Recipe Vault</h1>
+        <p data-i18n="app_subtitle">Discover recipes in a friendly, visual feed.</p>
+      </div>
+      <div class="top-actions">
+        <select id="lang-switch"><option value="en">English</option><option value="zh">中文</option></select>
+        <button id="theme-toggle" class="clear" data-i18n="theme_toggle">🌙 Night mode</button>
+        <button id="lucky-button" class="lucky" data-i18n="lucky_button">🎲 I'm Feeling Hungry</button>
+        <button id="open-modal" data-i18n="create_recipe">＋ Create Recipe</button>
+        <button id="login-github" class="clear" data-i18n="github_login">GitHub Login</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="panel">
+        <div class="filter-grid">
+          <label data-i18n="search_label">Search
+            <input id="search-input" type="search" data-i18n-placeholder="search_ph" />
+          </label>
+          <label data-i18n="tags_label">Tags
+            <input id="tag-filter" type="text" list="known-tags" data-i18n-placeholder="tags_ph" />
+          </label>
+          <label data-i18n="cal_cap">Calories cap
+            <input id="calorie-filter" type="number" min="0" data-i18n-placeholder="cal_ph" />
+          </label>
+          <label data-i18n="smart_ing">Smart ingredient search
+            <input id="smart-ingredient-input" type="text" data-i18n-placeholder="smart_ing_ph" />
+          </label>
+          <label data-i18n="sort_label">Sort by
+            <select id="sort-select">
+              <option value="newest" data-i18n="sort_newest">Newest in list</option>
+              <option value="calories_asc" data-i18n="sort_cal_asc">Calories: low to high</option>
+              <option value="calories_desc" data-i18n="sort_cal_desc">Calories: high to low</option>
+              <option value="title_asc" data-i18n="sort_title">Title: A to Z</option>
+            </select>
+          </label>
+        </div>
+        <datalist id="known-tags"></datalist>
+        <div class="bar-row">
+          <div id="tag-chip-bar" class="chip-bar"></div>
+          <button id="clear-filters" class="clear" data-i18n="clear_filters">Clear filters</button>
+        </div>
+      </section>
+      <section>
+        <div class="section-head"><h2 data-i18n="recipe_feed">Recipe Feed</h2><p id="result-count"></p></div>
+        <div id="gallery" class="feed"></div>
+      </section>
+    </main>
+
+    <footer class="footer"><small id="app-version"></small></footer>
+
+    <dialog id="recipe-detail-modal"><div class="modal-content"><h3 id="detail-title"></h3><p id="detail-meta" class="muted"></p><div id="detail-images" class="detail-images"></div><h4 data-i18n="ingredients">Ingredients</h4><pre id="detail-ingredients"></pre><h4 data-i18n="instructions">Instructions</h4><pre id="detail-instructions"></pre><p id="detail-citation-wrap" class="muted"><a id="detail-citation" target="_blank" rel="noopener"></a></p><button id="close-detail" data-i18n="close">Close</button></div></dialog>
+
+    <dialog id="recipe-modal">
+      <form id="recipe-form" class="modal-content">
+        <h3 id="form-mode-title" data-i18n="create_recipe_title">Create recipe</h3>
+        <input id="m-recipe-path" type="hidden" />
+        <label data-i18n="recipe_title">Recipe title <input id="m-title" required /></label>
+        <label data-i18n="calories">Calories <input id="m-calories" type="number" min="0" required /></label>
+        <label data-i18n="tags">Tags <input id="m-tags" list="known-tags" /></label>
+        <label data-i18n="citation">Citation link <input id="m-citation" type="url" placeholder="https://..." /></label>
+        <label data-i18n="ingredients_editor">Ingredients<div id="m-ingredients-editor" class="rich-editor" contenteditable="true" data-editor="ingredients"></div></label>
+        <label data-i18n="instructions_editor">Instructions<div id="m-instructions-editor" class="rich-editor" contenteditable="true" data-editor="instructions"></div></label>
+        <label data-i18n="demo_editor">成品演示<div id="m-demo-editor" class="rich-editor" contenteditable="true" data-editor="demo"></div></label>
+        <div id="attachment-preview" class="attachment-preview"></div>
+
+        <p id="form-status" class="muted"></p>
+        <menu>
+          <button type="button" id="close-modal" data-i18n="cancel">Cancel</button>
+          <button type="submit" id="submit-pr" data-i18n="create_pr">Create Pull Request</button>
+        </menu>
+      </form>
+    </dialog>
+
+
+    <dialog id="login-modal">
+      <form id="login-form" class="modal-content">
+        <h3 data-i18n="github_login">GitHub Login</h3>
+        <p class="muted" data-i18n="github_login_hint">One-time maintainer setup: paste your GitHub Personal Access Token. It is saved only in this browser.</p>
+        <label>Token <input id="gh-token" type="password" placeholder="ghp_..." required /></label>
+        <p id="login-status" class="muted"></p>
+        <menu>
+          <button type="button" id="close-login" data-i18n="cancel">Cancel</button>
+          <button type="submit" data-i18n="save_login">Save Login</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <template id="card-template">
+      <article class="recipe-card" tabindex="0">
+        <img class="cover" alt="Recipe cover" />
+        <div class="thumbs"></div>
+        <div class="card-body">
+          <h3 class="title"></h3>
+          <p class="meta"></p>
+          <p class="tags"></p>
+          <button class="edit-recipe clear" type="button" data-i18n="edit_recipe">Edit</button>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js?v=20260404b"></script>
+  </body>
+</html>
