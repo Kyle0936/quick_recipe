@@ -11,7 +11,8 @@ This makes the recipe collection publicly visible and collaboratively editable t
 - "🎲 I'm Feeling Hungry" button to jump to a random recipe from current filtered results.
 - Language switcher (English / 中文) and light/dark mode toggle.
 - Adaptive image rendering (no hard-cropping in modal/gallery previews).
-- Modal-based upload/recipe editor for creating new recipe Markdown + multiple image references.
+- Modal-based upload/recipe editor with three rich editors: Ingredients, Instructions, and 成品演示.
+- Supports multiple pasted images per editor, attachment previews, and removing images with sync between editor and attachment list.
 
 ## Recipe file format
 

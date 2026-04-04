@@ -50,6 +50,11 @@ dialog { border: none; border-radius: 16px; width: min(980px,95vw); background: 
 .rich-editor { min-height: 130px; overflow: auto; }
 .rich-editor:focus { outline: 2px solid #7f9bff; }
 .inline-image { max-width: min(100%, 420px); width: auto; height: auto; border-radius: 8px; border: 1px solid var(--line); margin-top: .4rem; object-fit: contain; }
+
+.inline-attachment { position: relative; display: inline-block; margin-top: .4rem; }
+.inline-remove { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 999px; padding: 0; background: rgba(0,0,0,.55); color: #fff; }
+.small { font-size: .82rem; padding: .35rem .55rem; }
+
 .attachment-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .5rem; }
 .attachment-chip { border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--card) 75%, #f8f9ff); padding: .45rem; display: grid; gap: .3rem; }
 .attachment-chip img { width: 100%; height: auto; max-height: 140px; object-fit: contain; border-radius: 8px; }
