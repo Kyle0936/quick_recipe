@@ -149,20 +149,49 @@ function openDetail(r){ const d=I18N[currentLang]; els.detailTitle.textContent=r
 function pickLucky(){ if(!filtered.length) return; openDetail(filtered[Math.floor(Math.random()*filtered.length)]); }
 
 function openCreateModal(){ editRecipe=null; els.formTitle.textContent=I18N[currentLang].create_recipe_title; resetForm(); els.recipePath.value=''; els.modal.showModal(); }
-function openEditModal(r){ editRecipe=r; resetForm(); els.recipePath.value = r.path || ''; els.formTitle.textContent=`${I18N[currentLang].edit_recipe}: ${r.title}`; els.title.value=r.title; els.calories.value=r.calories; els.tags.value=r.tags.join(', '); els.citation.value=r.citation || ''; els.ing.innerText=r.ingredients; els.ins.innerText=r.instructions; els.demo.innerText=''; els.modal.showModal(); }
+function openEditModal(r){
+  editRecipe=r;
+  resetForm();
+  els.recipePath.value = r.path || '';
+  els.formTitle.textContent=`${I18N[currentLang].edit_recipe}: ${r.title}`;
+  els.title.value=r.title;
+  els.calories.value=r.calories;
+  els.tags.value=r.tags.join(', ');
+  els.citation.value=r.citation || '';
+  els.ing.innerText=r.ingredients;
+  els.ins.innerText=r.instructions;
+  els.demo.innerText=r.demo || '';
+  (r.images || []).forEach((img, idx)=>{
+    const id = `existing-${Date.now()}-${idx}-${Math.random().toString(16).slice(2)}`;
+    const fileName = (img.split('/').pop() || `image-${idx+1}.jpg`).split('?')[0];
+    const attachment = { id, src: img, fileName, section:'demo', path: img, existing: true };
+    attachments.push(attachment);
+    insertInlineAttachment(els.demo, attachment);
+  });
+  renderAttachments();
+  els.modal.showModal();
+}
 function resetForm(){ els.form.reset(); els.ing.innerHTML=''; els.ins.innerHTML=''; els.demo.innerHTML=''; attachments=[]; renderAttachments(); els.status.textContent=''; }
 
 function pasteImages(e, section){
   const items=[...(e.clipboardData?.items||[])].filter((i)=>i.type.startsWith('image/'));
   if(!items.length) return;
   e.preventDefault();
-  items.forEach((item,idx)=>{ const f=item.getAsFile(); if(!f) return; const id=`${Date.now()}-${idx}-${Math.random().toString(16).slice(2)}`; const rd=new FileReader(); rd.onload=()=>{ const dataUrl=String(rd.result||''); attachments.push({id,dataUrl,fileName:f.name||`${section}-${id}.png`,section}); insertInlineAttachment(e.target,{id,dataUrl,fileName:f.name||'image.png'}); renderAttachments(); }; rd.readAsDataURL(f); });
+  items.forEach((item,idx)=>{ const f=item.getAsFile(); if(!f) return; const id=`${Date.now()}-${idx}-${Math.random().toString(16).slice(2)}`; const rd=new FileReader(); rd.onload=()=>{ const dataUrl=String(rd.result||''); attachments.push({id,src:dataUrl,fileName:f.name||`${section}-${id}.png`,section,existing:false}); insertInlineAttachment(e.target,{id,src:dataUrl,fileName:f.name||'image.png'}); renderAttachments(); }; rd.readAsDataURL(f); });
 }
 
-function insertInlineAttachment(editor,a){ const w=document.createElement('div'); w.className='inline-attachment'; w.dataset.attachmentId=a.id; w.innerHTML=`<img class="inline-image" src="${a.dataUrl}" alt="${a.fileName}" /><button type="button" class="inline-remove" data-remove-attachment="${a.id}">×</button>`; editor.append(w); }
+function insertInlineAttachment(editor,a){ const w=document.createElement('div'); w.className='inline-attachment'; w.dataset.attachmentId=a.id; w.innerHTML=`<img class="inline-image" src="${a.src}" alt="${a.fileName}" /><button type="button" class="inline-remove" data-remove-attachment="${a.id}">×</button>`; editor.append(w); }
 function syncAttachments(){ const ids=new Set([...document.querySelectorAll('[data-attachment-id]')].map((n)=>n.dataset.attachmentId)); attachments=attachments.filter((a)=>ids.has(a.id)); renderAttachments(); }
 function removeAttachment(id){ attachments=attachments.filter((a)=>a.id!==id); document.querySelectorAll(`[data-attachment-id="${id}"]`).forEach((n)=>n.remove()); renderAttachments(); }
-function renderAttachments(){ els.attachPreview.innerHTML=''; attachments.forEach((a,idx)=>{ const c=document.createElement('div'); c.className='attachment-chip'; c.innerHTML=`<img src="${a.dataUrl}" /><span>${idx+1}. ${a.fileName}</span><small>${a.section}</small><button type="button" class="clear small" data-remove-attachment="${a.id}">${I18N[currentLang].remove_image}</button>`; els.attachPreview.append(c); }); }
+function renderAttachments(){
+  els.attachPreview.innerHTML='';
+  attachments.forEach((a,idx)=>{
+    const c=document.createElement('div');
+    c.className='attachment-chip';
+    c.innerHTML=`<img src="${a.src}" /><span>${idx+1}. ${a.fileName}</span><small>${a.section}${a.existing?' • existing':''}</small><button type="button" class="clear small" data-remove-attachment="${a.id}">${I18N[currentLang].remove_image}</button>`;
+    els.attachPreview.append(c);
+  });
+}
 
 async function submitRecipe(e){
   e.preventDefault();
@@ -177,14 +206,23 @@ async function submitRecipe(e){
   const fileName=toRecipeFileName(title)+'.md';
   const recipePath = els.recipePath.value || editRecipe?.path || `recipes/${fileName}`;
   const slug = toRecipeFileName(title);
-  const imageUploads = attachments.map((a,idx)=> ({
-    path: `recipes/images/${slug}/${idx+1}-${sanitizeFileName(a.fileName)}`,
-    dataUrl: a.dataUrl
-  }));
+  let newImageCounter = 0;
+  const imagePaths = attachments.map((a)=>{
+    if (a.path) return a.path;
+    newImageCounter += 1;
+    return `recipes/images/${slug}/${newImageCounter}-${sanitizeFileName(a.fileName)}`;
+  });
+  const imageUploads = attachments
+    .map((a, idx)=>{
+      if (a.path || !a.src || !a.src.startsWith('data:')) return null;
+      const path = imagePaths[idx];
+      return { path, dataUrl: a.src };
+    })
+    .filter(Boolean);
   const markdown = buildMarkdown({
     title, calories:Number(els.calories.value||0), tags, citation: els.citation.value.trim(),
     ingredients:extractLines(els.ing), instructions:extractLines(els.ins), demo:extractLines(els.demo),
-    imagePaths:imageUploads.map((x)=>x.path)
+    imagePaths
   });
 
   els.status.textContent = currentLang==='zh'?'正在创建 PR...':'Creating PR...';
@@ -247,8 +285,25 @@ function toRecipeFileName(title){ return title.trim().replace(/\s+/g,'-').replac
 
 async function loadKnownTags(){ try { return (await fetch(resolveRepoUrl('recipes/metadata.json')).then(r=>r.json())).tags || []; } catch { return []; } }
 async function loadRecipesFromRepo(){ const index = dedupeRecipePaths(await fetch(resolveRepoUrl('recipes/index.json')).then(r=>r.json())); const items = await Promise.all(index.map(async (p)=>{ const res = await fetch(resolveRepoUrl(p)); if(!res.ok) return null; return { text: await res.text(), path: p }; })); return items.filter(Boolean).map((it,i)=>parseRecipeMarkdown(it.text,i,it.path)); }
-function parseRecipeMarkdown(md, idx, path){ const m=md.replace(/\r\n/g,'\n').match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/); const fm=m?m[1]:''; const body=m?m[2]:md; const title=getFm(fm,'title')||`Recipe ${idx+1}`; return { id:`${idx}-${title}`, path, title, calories:Number(getFm(fm,'calories')||0), tags:getFm(fm,'tags').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean), citation:getFm(fm,'citation'), images:getArrayFm(fm,'images'), ingredients:getSec(body,'Ingredients'), instructions:getSec(body,'Instructions') }; }
-function getFm(fm,key){ const m=fm.match(new RegExp(`^${key}:\\s*(.*)$`,'m')); return m?m[1].trim():''; }
+function parseRecipeMarkdown(md, idx, path){
+  const m=md.replace(/\r\n/g,'\n').match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  const fm=m?m[1]:'';
+  const body=m?m[2]:md;
+  const title=getFm(fm,'title')||`Recipe ${idx+1}`;
+  return {
+    id:`${idx}-${title}`,
+    path,
+    title,
+    calories:Number(getFm(fm,'calories')||0),
+    tags:getFm(fm,'tags').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean),
+    citation:getFm(fm,'citation'),
+    images:getArrayFm(fm,'images'),
+    ingredients:getSec(body,'Ingredients'),
+    instructions:getSec(body,'Instructions'),
+    demo:getSec(body,'成品演示')
+  };
+}
+function getFm(fm,key){ const m=fm.match(new RegExp(`^${key}:[ \\t]*(.*)$`,'m')); return m?m[1].trim():''; }
 function getArrayFm(fm,key){ const l=fm.split('\n'); const s=l.findIndex((x)=>x.trim()===`${key}:`); if(s===-1)return[]; const v=[]; for(let i=s+1;i<l.length;i++){const t=l[i].trim(); if(!t.startsWith('- '))break; v.push(t.slice(2).trim());} return v; }
 function getSec(body,name){ const m=body.match(new RegExp(`##\\s+${name}\\n([\\s\\S]*?)(?=\\n##\\s+|$)`)); return (m?m[1]:'').trim(); }
 
