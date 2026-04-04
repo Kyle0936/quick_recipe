@@ -177,21 +177,25 @@ async function submitRecipe(e){
   const fileName=toRecipeFileName(title)+'.md';
   const recipePath = els.recipePath.value || editRecipe?.path || `recipes/${fileName}`;
   const slug = toRecipeFileName(title);
+  const imageUploads = attachments.map((a,idx)=> ({
+    path: `recipes/images/${slug}/${idx+1}-${sanitizeFileName(a.fileName)}`,
+    dataUrl: a.dataUrl
+  }));
   const markdown = buildMarkdown({
     title, calories:Number(els.calories.value||0), tags, citation: els.citation.value.trim(),
     ingredients:extractLines(els.ing), instructions:extractLines(els.ins), demo:extractLines(els.demo),
-    imagePaths:attachments.map((a,idx)=>`recipes/images/${slug}/${idx+1}-${a.fileName}`)
+    imagePaths:imageUploads.map((x)=>x.path)
   });
 
   els.status.textContent = currentLang==='zh'?'正在创建 PR...':'Creating PR...';
   try {
-    const prUrl = await createRecipePr({ owner, repo, token, base, recipePath, markdown, editPath: !!editRecipe });
+    const prUrl = await createRecipePr({ owner, repo, token, base, recipePath, markdown, imageUploads, editPath: !!editRecipe });
     els.status.innerHTML = `<a href="${prUrl}" target="_blank">PR created: ${prUrl}</a>`;
     recipes = await loadRecipesFromRepo(); knownTags = (await loadKnownTags()).length ? await loadKnownTags() : deriveTags(recipes); renderKnownTags(); renderTagChips(); applyFilters();
   } catch(err){ els.status.textContent = `Error: ${err.message}`; }
 }
 
-async function createRecipePr({ owner, repo, token, base, recipePath, markdown, editPath }) {
+async function createRecipePr({ owner, repo, token, base, recipePath, markdown, imageUploads, editPath }) {
   const api = (p) => `https://api.github.com/repos/${owner}/${repo}${p}`;
   const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
 
@@ -201,11 +205,22 @@ async function createRecipePr({ owner, repo, token, base, recipePath, markdown, 
   await fetch(api('/git/refs'), { method:'POST', headers:{...headers,'Content-Type':'application/json'}, body:JSON.stringify({ ref:`refs/heads/${branch}`, sha }) });
 
   const indexMeta = await getContent(api('/contents/recipes/index.json'), headers, branch);
-  const list = JSON.parse(atob(indexMeta.content));
-  if (!list.includes(recipePath)) list.push(recipePath);
+  const listRaw = JSON.parse(decodeBase64Utf8(indexMeta.content));
+  const list = dedupeRecipePaths([...listRaw, recipePath]);
 
   const recipeExisting = await getContent(api(`/contents/${recipePath}`), headers, branch, true);
   await putContent(api(`/contents/${recipePath}`), headers, branch, `Save recipe ${recipePath}`, markdown, recipeExisting?.sha);
+  for (const image of imageUploads) {
+    await putContent(
+      api(`/contents/${image.path}`),
+      headers,
+      branch,
+      `Upload recipe image ${image.path}`,
+      image.dataUrl.split(',')[1],
+      undefined,
+      true
+    );
+  }
   await putContent(api('/contents/recipes/index.json'), headers, branch, 'Update recipe index', JSON.stringify(list, null, 2) + '\n', indexMeta.sha);
 
   const pr = await fetch(api('/pulls'), { method:'POST', headers:{...headers,'Content-Type':'application/json'}, body:JSON.stringify({ title: editPath ? `Edit recipe: ${recipePath}` : `Add recipe: ${recipePath}`, head:branch, base, body:'Recipe update from Quick Recipe Vault UI.' }) }).then(r=>r.json());
@@ -218,8 +233,8 @@ async function getContent(url, headers, branch, allow404=false) {
   if (!res.ok) throw new Error(`GitHub content fetch failed: ${res.status}`);
   return res.json();
 }
-async function putContent(url, headers, branch, message, text, sha) {
-  const body = { message, content: btoa(unescape(encodeURIComponent(text))), branch };
+async function putContent(url, headers, branch, message, text, sha, alreadyBase64=false) {
+  const body = { message, content: alreadyBase64 ? text : encodeBase64Utf8(text), branch };
   if (sha) body.sha = sha;
   const res = await fetch(url, { method:'PUT', headers:{...headers,'Content-Type':'application/json'}, body:JSON.stringify(body) });
   if (!res.ok) throw new Error(`GitHub content update failed: ${res.status}`);
@@ -231,7 +246,7 @@ function buildMarkdown({ title, calories, tags, citation, ingredients, instructi
 function toRecipeFileName(title){ return title.trim().replace(/\s+/g,'-').replace(/[\\/:*?"<>|]/g,'').toLowerCase(); }
 
 async function loadKnownTags(){ try { return (await fetch(resolveRepoUrl('recipes/metadata.json')).then(r=>r.json())).tags || []; } catch { return []; } }
-async function loadRecipesFromRepo(){ const index = await fetch(resolveRepoUrl('recipes/index.json')).then(r=>r.json()); const items = await Promise.all(index.map((p)=>fetch(resolveRepoUrl(p)).then(r=>r.text()))); return items.map((t,i)=>parseRecipeMarkdown(t,i,index[i])); }
+async function loadRecipesFromRepo(){ const index = dedupeRecipePaths(await fetch(resolveRepoUrl('recipes/index.json')).then(r=>r.json())); const items = await Promise.all(index.map(async (p)=>{ const res = await fetch(resolveRepoUrl(p)); if(!res.ok) return null; return { text: await res.text(), path: p }; })); return items.filter(Boolean).map((it,i)=>parseRecipeMarkdown(it.text,i,it.path)); }
 function parseRecipeMarkdown(md, idx, path){ const m=md.replace(/\r\n/g,'\n').match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/); const fm=m?m[1]:''; const body=m?m[2]:md; const title=getFm(fm,'title')||`Recipe ${idx+1}`; return { id:`${idx}-${title}`, path, title, calories:Number(getFm(fm,'calories')||0), tags:getFm(fm,'tags').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean), citation:getFm(fm,'citation'), images:getArrayFm(fm,'images'), ingredients:getSec(body,'Ingredients'), instructions:getSec(body,'Instructions') }; }
 function getFm(fm,key){ const m=fm.match(new RegExp(`^${key}:\\s*(.*)$`,'m')); return m?m[1].trim():''; }
 function getArrayFm(fm,key){ const l=fm.split('\n'); const s=l.findIndex((x)=>x.trim()===`${key}:`); if(s===-1)return[]; const v=[]; for(let i=s+1;i<l.length;i++){const t=l[i].trim(); if(!t.startsWith('- '))break; v.push(t.slice(2).trim());} return v; }
@@ -251,6 +266,22 @@ function ingredientMatch(recipe, smartTerms) {
   if (!smartTerms.length) return true;
   const haystack = `${recipe.ingredients} ${recipe.instructions} ${recipe.title}`.toLowerCase();
   return smartTerms.some((term) => haystack.includes(term));
+}
+
+
+function sanitizeFileName(name){ return String(name||'image.jpg').replace(/[\/:*?"<>|]/g,'-'); }
+function encodeBase64Utf8(text){ return btoa(unescape(encodeURIComponent(text))); }
+function decodeBase64Utf8(base64){ return decodeURIComponent(escape(atob(String(base64).replace(/\n/g,'')))); }
+function dedupeRecipePaths(paths){
+  const seen = new Set();
+  const out = [];
+  for (const p of paths) {
+    const clean = decodeURIComponent(String(p)).replace(/^\.\//,'');
+    if (seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+  }
+  return out;
 }
 
 function resolveRepoUrl(path){ return `${window.location.origin}${APP_BASE_PATH}${path.replace(/^\.\//,'').replace(/^\//,'')}`; }
