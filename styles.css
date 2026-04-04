@@ -63,3 +63,9 @@ dialog { border: none; border-radius: 16px; width: min(980px,95vw); background: 
 menu { display: flex; justify-content: flex-end; gap: .5rem; margin: 0; padding: 0; }
 .muted { color: var(--sub); margin: 0; }
 @media (max-width: 700px) { .topbar { align-items: flex-start; flex-direction: column; } }
+
+
+.edit-recipe { margin-top: .45rem; }
+#form-status { min-height: 1.2rem; }
+summary { cursor: pointer; font-weight: 700; }
+details { border: 1px solid var(--line); border-radius: 10px; padding: .5rem; }

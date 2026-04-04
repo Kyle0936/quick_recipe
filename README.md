@@ -3,11 +3,14 @@
 Quick Recipe Vault is a static website that reads recipes from Markdown files in this repository (`/recipes`).
 This makes the recipe collection publicly visible and collaboratively editable through GitHub commits/PRs.
 
+Tags are sourced from `recipes/metadata.json` so filtering and editor tagging only use known tags.
+
 ## Features
 
 - Public recipe storage in repo files instead of browser-local storage.
-- Recipe format based on Markdown + frontmatter (`title`, `calories`, `tags`, `images`).
+- Recipe format based on Markdown + frontmatter (`title`, `calories`, `tags`, `citation`, `images`).
 - Horizontal sliding gallery with search + tag filter + calorie cap filter.
+- Smart ingredient search with synonym expansion (e.g. 牛肉 ⇒ 牛肋条 / 和牛 / beef variants).
 - "🎲 I'm Feeling Hungry" button to jump to a random recipe from current filtered results.
 - Language switcher (English / 中文) and light/dark mode toggle.
 - Adaptive image rendering (no hard-cropping in modal/gallery previews).
@@ -39,14 +42,10 @@ images:
 
 ## Add a new recipe publicly
 
-1. Open the website and click **Create Recipe**.
-2. Fill the form and paste one or more images directly into the Ingredients/Instructions editors (or type text only).
-3. Download the generated markdown file.
-4. In this GitHub repo:
-   - add the markdown file to `/recipes`
-   - add the images to `/recipes/images/<slug>/`
-   - append the recipe path to `recipes/index.json`
-5. Commit + push (or open a PR).
+1. Open the website and click **Create Recipe** (or edit an existing one via the card edit button).
+2. Fill the form; tags must come from known tags in `recipes/metadata.json`, and optionally add a citation link to the original recipe.
+3. Configure GitHub owner/repo/base branch + token in **GitHub PR settings**.
+4. Click **Create Pull Request** to create/update markdown in `/recipes` and update `recipes/index.json` on a new branch with an auto-created PR.
 
 ## Run locally
 
